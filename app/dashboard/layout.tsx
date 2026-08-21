@@ -1,7 +1,7 @@
 import React from 'react';
 import { getSession } from '@/lib/auth';
-import { redirect } from 'next/navigation';
 import { DashboardClientLayout } from './client-layout';
+import { UnauthenticatedRedirect } from './unauthenticated-redirect';
 
 export default async function DashboardLayout({
   children,
@@ -9,8 +9,9 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await getSession();
+  
   if (!session) {
-    redirect('/login');
+    return <UnauthenticatedRedirect />;
   }
 
   return (

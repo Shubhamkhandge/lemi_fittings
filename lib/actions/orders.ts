@@ -323,35 +323,55 @@ export async function deleteOrdersByIds(ids: string[]) {
 }
 
 export async function getPendingOrders() {
-  return db.orderRecord.findMany({
-    where: { status: 'PENDING' },
-    include: { items: true, payments: true },
-    orderBy: { createdAt: 'desc' },
-  });
+  try {
+    return await db.orderRecord.findMany({
+      where: { status: 'PENDING' },
+      include: { items: true, payments: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  } catch (err) {
+    console.error('getPendingOrders fallback:', err);
+    return [];
+  }
 }
 
 export async function getCompletedOrders() {
-  return db.orderRecord.findMany({
-    where: { status: { in: ['COMPLETED', 'ARCHIVED'] } },
-    include: { items: true, payments: true },
-    orderBy: { createdAt: 'desc' },
-  });
+  try {
+    return await db.orderRecord.findMany({
+      where: { status: { in: ['COMPLETED', 'ARCHIVED'] } },
+      include: { items: true, payments: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  } catch (err) {
+    console.error('getCompletedOrders fallback:', err);
+    return [];
+  }
 }
 
 export async function getOrders(archived: boolean = false) {
-  return db.orderRecord.findMany({
-    where: archived
-      ? { status: { in: ['COMPLETED', 'ARCHIVED'] } }
-      : { status: 'PENDING' },
-    include: { items: true, payments: true },
-    orderBy: { createdAt: 'desc' },
-  });
+  try {
+    return await db.orderRecord.findMany({
+      where: archived
+        ? { status: { in: ['COMPLETED', 'ARCHIVED'] } }
+        : { status: 'PENDING' },
+      include: { items: true, payments: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  } catch (err) {
+    console.error('getOrders fallback:', err);
+    return [];
+  }
 }
 
 export async function getProducts() {
-  return db.product.findMany({
-    orderBy: { name: 'asc' },
-  });
+  try {
+    return await db.product.findMany({
+      orderBy: { name: 'asc' },
+    });
+  } catch (err) {
+    console.error('getProducts fallback:', err);
+    return [];
+  }
 }
 
 export async function addProduct(name: string, price: number, unit: string = 'Pcs', stock: number = 100) {
@@ -392,9 +412,14 @@ export async function deleteProduct(id: string) {
 
 /* CUSTOMER DIRECTORY ACTIONS */
 export async function getCustomers() {
-  return db.customer.findMany({
-    orderBy: { name: 'asc' },
-  });
+  try {
+    return await db.customer.findMany({
+      orderBy: { name: 'asc' },
+    });
+  } catch (err) {
+    console.error('getCustomers fallback:', err);
+    return [];
+  }
 }
 
 export async function createCustomer(formData: {
