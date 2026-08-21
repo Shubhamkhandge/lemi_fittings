@@ -77,10 +77,15 @@ export async function getCurrentUser() {
   const session = await getSession();
   if (!session) return null;
   
-  const user = await db.user.findUnique({
-    where: { id: session.id },
-    select: { id: true, email: true, name: true, role: true },
-  });
+  try {
+    const user = await db.user.findUnique({
+      where: { id: session.id },
+      select: { id: true, email: true, name: true, role: true },
+    });
 
-  return user;
+    return user || session;
+  } catch (err) {
+    console.warn('DB user lookup fallback to session:', err);
+    return session;
+  }
 }
