@@ -20,7 +20,7 @@ import { addProduct, updateProduct, deleteProduct } from '@/lib/actions/orders';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
-export function ProductsClientView({ products }: { products: any[] }) {
+export function ProductsClientView({ products = [] }: { products?: any[] }) {
   const router = useRouter();
 
   // Search & Filter State
@@ -52,29 +52,32 @@ export function ProductsClientView({ products }: { products: any[] }) {
     stock: 100,
   });
 
+  const safeProducts = useMemo(() => (Array.isArray(products) ? products : []), [products]);
+
   // Filtered Products
   const filteredProducts = useMemo(() => {
-    return products.filter((p) => {
-      const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+    return safeProducts.filter((p) => {
+      if (!p || typeof p.name !== 'string') return false;
+      const matchesSearch = p.name.toLowerCase().includes((searchTerm || '').toLowerCase());
       const matchesUnit = unitFilter === 'ALL' || p.unit === unitFilter;
       return matchesSearch && matchesUnit;
     });
-  }, [products, searchTerm, unitFilter]);
+  }, [safeProducts, searchTerm, unitFilter]);
 
   // Catalog Metrics
-  const totalProducts = products.length;
+  const totalProducts = safeProducts.length;
   const avgPrice = useMemo(() => {
-    if (products.length === 0) return 0;
-    return Math.round(products.reduce((acc, p) => acc + (p.price || 0), 0) / products.length);
-  }, [products]);
+    if (safeProducts.length === 0) return 0;
+    return Math.round(safeProducts.reduce((acc, p) => acc + (p?.price || 0), 0) / safeProducts.length);
+  }, [safeProducts]);
 
   const totalStock = useMemo(() => {
-    return products.reduce((acc, p) => acc + (p.stock ?? 100), 0);
-  }, [products]);
+    return safeProducts.reduce((acc, p) => acc + (p?.stock ?? 100), 0);
+  }, [safeProducts]);
 
   const unitVariety = useMemo(() => {
-    return new Set(products.map((p) => p.unit)).size;
-  }, [products]);
+    return new Set(safeProducts.map((p) => p?.unit || 'Pcs')).size;
+  }, [safeProducts]);
 
   // Handle Add Product
   const handleAddProduct = async (e: React.FormEvent) => {

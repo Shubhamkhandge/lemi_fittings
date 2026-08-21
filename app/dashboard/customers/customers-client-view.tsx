@@ -7,7 +7,7 @@ import { createCustomer, deleteCustomer } from '@/lib/actions/orders';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
-export function CustomersClientView({ customers, orders }: { customers: any[]; orders: any[] }) {
+export function CustomersClientView({ customers = [], orders = [] }: { customers?: any[]; orders?: any[] }) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -20,8 +20,12 @@ export function CustomersClientView({ customers, orders }: { customers: any[]; o
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const safeCustomers = Array.isArray(customers) ? customers : [];
+  const safeOrders = Array.isArray(orders) ? orders : [];
+
   // Filter Customers by Search
-  const filteredCustomers = customers.filter((c) => {
+  const filteredCustomers = safeCustomers.filter((c) => {
+    if (!c || !c.name) return false;
     if (!searchTerm.trim()) return true;
     const query = searchTerm.toLowerCase();
     return c.name.toLowerCase().includes(query) || (c.mobile && c.mobile.includes(query));

@@ -213,17 +213,17 @@ function SearchableProductCombobox({
    MAIN SIMPLE DASHBOARD CLIENT COMPONENT
    ========================================================================= */
 export function SimpleDashboardClient({
-  pendingOrders,
-  products,
+  pendingOrders = [],
+  products = [],
   customers = [],
-  totalPendingDue,
-  totalCollected,
+  totalPendingDue = 0,
+  totalCollected = 0,
 }: {
-  pendingOrders: any[];
-  products: any[];
+  pendingOrders?: any[];
+  products?: any[];
   customers?: any[];
-  totalPendingDue: number;
-  totalCollected: number;
+  totalPendingDue?: number;
+  totalCollected?: number;
 }) {
   const router = useRouter();
 

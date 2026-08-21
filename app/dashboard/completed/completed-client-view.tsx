@@ -15,7 +15,7 @@ import { deleteOrder, unarchiveOrder, deleteOrdersByDateRange } from '@/lib/acti
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
-export function CompletedClientView({ orders }: { orders: any[] }) {
+export function CompletedClientView({ orders = [] }: { orders?: any[] }) {
   const router = useRouter();
 
   // Search & Filter States
@@ -28,34 +28,40 @@ export function CompletedClientView({ orders }: { orders: any[] }) {
   const [dueInputAmount, setDueInputAmount] = useState<number>(1);
   const [loading, setLoading] = useState(false);
 
+  const safeOrders = useMemo(() => (Array.isArray(orders) ? orders : []), [orders]);
+
   // Filtered orders by Search & Date Range
   const filteredOrders = useMemo(() => {
-    return orders.filter((o) => {
+    return safeOrders.filter((o) => {
+      if (!o) return false;
+      const term = (searchTerm || '').toLowerCase();
       const matchesSearch =
-        o.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        o.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (o.customerMobile && o.customerMobile.includes(searchTerm)) ||
-        o.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (o.items && o.items.some((i: any) => i.productName.toLowerCase().includes(searchTerm.toLowerCase())));
+        (o.orderNumber && o.orderNumber.toLowerCase().includes(term)) ||
+        (o.customerName && o.customerName.toLowerCase().includes(term)) ||
+        (o.customerMobile && o.customerMobile.includes(term)) ||
+        (o.productName && o.productName.toLowerCase().includes(term)) ||
+        (o.items && o.items.some((i: any) => i?.productName && i.productName.toLowerCase().includes(term)));
 
       if (!matchesSearch) return false;
 
       // Date Range Filter
-      const orderDate = new Date(o.createdAt);
-      if (fromDate) {
-        const start = new Date(fromDate);
-        start.setHours(0, 0, 0, 0);
-        if (orderDate < start) return false;
-      }
-      if (toDate) {
-        const end = new Date(toDate);
-        end.setHours(23, 59, 59, 999);
-        if (orderDate > end) return false;
+      if (o.createdAt) {
+        const orderDate = new Date(o.createdAt);
+        if (fromDate) {
+          const start = new Date(fromDate);
+          start.setHours(0, 0, 0, 0);
+          if (orderDate < start) return false;
+        }
+        if (toDate) {
+          const end = new Date(toDate);
+          end.setHours(23, 59, 59, 999);
+          if (orderDate > end) return false;
+        }
       }
 
       return true;
     });
-  }, [orders, searchTerm, fromDate, toDate]);
+  }, [safeOrders, searchTerm, fromDate, toDate]);
 
   // Open Recover Modal
   const handleOpenRecoverModal = (order: any) => {
